@@ -1,0 +1,11 @@
+# build no_std 
+b: 
+  cargo build
+
+# build std 
+bs: 
+  cargo build --features std 
+
+# test std
+ts: 
+  cargo test --features std

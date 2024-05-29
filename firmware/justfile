@@ -1,0 +1,3 @@
+# compile esp32c6
+cc6: 
+  cd ./esp32c6 && cargo build --example sw_and_hw --features riscv-esp32c6-backend --release
