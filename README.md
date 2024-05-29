@@ -9,6 +9,9 @@ STM32 OsPID clone
 - clone OsPid 
 - use STM32 Micorcontroller
 - use High Current SSR output
+- USB connector
+- JTAG header
+
 
 
 ## Reference 
