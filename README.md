@@ -1,7 +1,7 @@
 
 ## 🎶 OST-PID
 
-![stm32f103rbt6](https://stm32-base.org/assets/img/boards/STM32F103RBT6_STM32F103RxT6_DEMO-2.jpg)
+![omoronSS](https://github.com/ahsanu123/ost-pid/blob/main/docs/omronDigitalTempController.png)
 
 STM32 OsPID clone 
 
