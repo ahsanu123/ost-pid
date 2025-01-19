@@ -20,3 +20,6 @@ STM32 OsPID clone
 
 ## Reference 
 - OsPID github: https://github.com/osPID
+
+
+<sub>a long project with the hope of completion. created with ♥️ by ah...</sub>
