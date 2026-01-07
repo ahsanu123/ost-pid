@@ -20,6 +20,7 @@ STM32 OsPID clone
 
 ## Reference 
 - OsPID github: https://github.com/osPID
+- DualPID https://github.com/knifter/DualPID/ 
 
 
 <sub>a long project with the hope of completion. created with ♥️ by ah...</sub>
