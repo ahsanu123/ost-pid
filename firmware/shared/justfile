@@ -9,3 +9,7 @@ bs:
 # test std
 ts: 
   cargo test --features std
+
+# build and run 
+br: 
+  cargo build --bin test_pid --features std && cargo run --bin test_pid

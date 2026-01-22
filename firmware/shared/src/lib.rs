@@ -16,6 +16,8 @@ pub use samplers::max31865_sampler::Max31865Sampler;
 pub use samplers::mock_sampler::MockSampler;
 pub use samplers::sampler_trait::SamplerTrait;
 
+pub use pid;
+
 #[cfg(feature = "std")]
 #[cfg(test)]
 mod test {
