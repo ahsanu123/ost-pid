@@ -7,15 +7,16 @@ pub(crate) mod driver;
 pub(crate) mod error;
 pub(crate) mod input;
 pub(crate) mod processor;
-pub(crate) mod sampler;
+pub(crate) mod samplers;
 pub(crate) mod singletons;
-pub(crate) mod task_trait;
+pub(crate) mod tasks;
 pub(crate) mod ui;
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub use samplers::max31865_sampler::Max31865Sampler;
+pub use samplers::mock_sampler::MockSampler;
+pub use samplers::sampler_trait::SamplerTrait;
 
+#[cfg(feature = "std")]
 #[cfg(test)]
 mod test {
     #[test]

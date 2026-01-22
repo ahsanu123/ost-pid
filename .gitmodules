@@ -1,0 +1,3 @@
+[submodule "firmware/rdc"]
+	path = firmware/rdc
+	url = https://github.com/ahsanu123/RDC.git

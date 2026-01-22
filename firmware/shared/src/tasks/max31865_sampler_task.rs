@@ -1,0 +1,16 @@
+use crate::{Max31865Sampler, SamplerTrait, singletons::push_sample, tasks::task_trait::TaskTrait};
+use embassy_time::Timer;
+use embedded_hal::{delay::DelayNs, spi::SpiBus};
+
+impl<S, D> TaskTrait for Max31865Sampler<S, D>
+where
+    S: SpiBus,
+    D: DelayNs,
+{
+    async fn run(&mut self) {
+        let value = self.sample();
+
+        push_sample(value).await;
+        Timer::after_millis(50).await;
+    }
+}
