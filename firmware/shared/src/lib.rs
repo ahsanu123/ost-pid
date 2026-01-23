@@ -3,6 +3,7 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+pub(crate) mod constant;
 pub(crate) mod drivers;
 pub(crate) mod error;
 pub(crate) mod input;

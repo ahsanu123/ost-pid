@@ -1,31 +1,55 @@
-use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, mutex::Mutex};
+use embassy_sync::{
+    blocking_mutex::raw::CriticalSectionRawMutex,
+    pubsub::{PubSubBehavior, PubSubChannel},
+    watch::Watch,
+};
+
+const CH_CAP_SIZE: usize = 5;
+const CH_SUB_SIZE: usize = 5;
+const CH_PUB_SIZE: usize = 4;
+
+const SAMPLER_WATCHER_RECEIVER_COUNT: usize = 4;
+
+pub static GLOBAL_STATE_CH: PubSubChannel<
+    CriticalSectionRawMutex,
+    GlobalStateMessage,
+    CH_CAP_SIZE,
+    CH_SUB_SIZE,
+    CH_PUB_SIZE,
+> = PubSubChannel::new();
+
+pub static SAMPLER_WATCHER: Watch<CriticalSectionRawMutex, f32, SAMPLER_WATCHER_RECEIVER_COUNT> =
+    Watch::new();
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum StateType {
+    Sampler,
+    Input,
+}
+
+#[derive(Clone, Copy)]
+pub struct GlobalStateMessage {
+    pub ty: StateType,
+    pub msg: GlobalStateModel,
+}
 
 #[derive(Clone, Copy)]
 pub struct GlobalStateModel {
-    drive_out_val: f32,
-    min_out: f32,
-    max_out: f32,
+    pub output_val: f32,
+    pub sampling_val: f32,
 }
 
 impl GlobalStateModel {
     pub const fn new() -> Self {
         Self {
-            drive_out_val: 10.0,
-            min_out: 0.0,
-            max_out: 100.0,
+            output_val: 30.0,
+            sampling_val: 0.0,
         }
     }
 }
 
-pub static GLOBAL_STATE: Mutex<CriticalSectionRawMutex, GlobalStateModel> =
-    Mutex::new(GlobalStateModel::new());
+pub async fn push_global_msg(value: GlobalStateModel, ty: StateType) {
+    let msg = GlobalStateMessage { msg: value, ty };
 
-pub async fn get_state() -> GlobalStateModel {
-    let state = GLOBAL_STATE.lock().await;
-    *state
-}
-
-pub async fn set_state(value: GlobalStateModel) {
-    let mut state = GLOBAL_STATE.lock().await;
-    *state = value;
+    GLOBAL_STATE_CH.publish_immediate(msg);
 }

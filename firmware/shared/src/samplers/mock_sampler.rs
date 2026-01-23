@@ -1,3 +1,4 @@
+use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, watch::Sender};
 use embedded_hal_async::digital::Wait;
 
 use crate::samplers::sampler_trait::SamplerTrait;
@@ -9,6 +10,7 @@ where
     pub value: f32,
     pub inc_input: IN,
     pub dec_input: IN,
+    pub sampler_sender: Sender<'static, CriticalSectionRawMutex, f32, 4>,
 }
 
 impl<IN> MockSampler<IN>

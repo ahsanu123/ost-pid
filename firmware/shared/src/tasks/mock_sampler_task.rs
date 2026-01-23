@@ -1,4 +1,4 @@
-use crate::{MockSampler, singletons::push_sample, tasks::task_trait::TaskTrait};
+use crate::{MockSampler, tasks::task_trait::TaskTrait};
 use embassy_futures::select::{Either, select};
 use embedded_hal_async::digital::Wait;
 
@@ -17,6 +17,6 @@ where
             Either::Second(_) => self.decrease_value(),
         }
 
-        push_sample(self.value).await;
+        self.sampler_sender.send(self.value);
     }
 }

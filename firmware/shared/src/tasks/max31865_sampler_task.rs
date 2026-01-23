@@ -1,4 +1,4 @@
-use crate::{Max31865Sampler, SamplerTrait, singletons::push_sample, tasks::task_trait::TaskTrait};
+use crate::{Max31865Sampler, SamplerTrait, tasks::task_trait::TaskTrait};
 use embassy_time::Timer;
 use embedded_hal::{delay::DelayNs, spi::SpiBus};
 
@@ -9,8 +9,8 @@ where
 {
     async fn run(&mut self) {
         let value = self.sample();
+        self.sampler_sender.send(value);
 
-        push_sample(value).await;
         Timer::after_millis(50).await;
     }
 }

@@ -1,11 +1,59 @@
+use crate::{
+    constant::{D_LIMIT, D_VAL, I_LIMIT, I_VAL, INITIAL_TEMP, OUT_LIMIT, P_LIMIT, P_VAL},
+    drivers::driver_trait::DriverTrait,
+    singletons::global_state_singleton::SAMPLER_WATCHER,
+    tasks::task_trait::TaskTrait,
+};
+use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, watch::Receiver};
+use pid::Pid;
+
 pub trait ProcessorTrait {
-    fn compute(&mut self) -> f32;
+    async fn compute(&mut self);
 }
 
-pub struct PidProcessor {}
+pub struct FrrProcessor<D>
+where
+    D: DriverTrait,
+{
+    pid: Pid<f32>,
+    driver: D,
+    sampler_receiver: Receiver<'static, CriticalSectionRawMutex, f32, 4>,
+}
 
-impl Default for PidProcessor {
-    fn default() -> Self {
-        Self {}
+impl<D> FrrProcessor<D>
+where
+    D: DriverTrait,
+{
+    pub fn new(driver: D) -> Self {
+        let mut pid: Pid<f32> = Pid::new(INITIAL_TEMP, OUT_LIMIT);
+        pid.p(P_VAL, P_LIMIT).i(I_VAL, I_LIMIT).d(D_VAL, D_LIMIT);
+
+        let sampler_receiver = SAMPLER_WATCHER.receiver().unwrap();
+
+        Self {
+            pid,
+            driver,
+            sampler_receiver,
+        }
+    }
+}
+
+impl<D> ProcessorTrait for FrrProcessor<D>
+where
+    D: DriverTrait,
+{
+    async fn compute(&mut self) {
+        let measurement = self.sampler_receiver.changed().await;
+        let control = self.pid.next_control_output(measurement);
+        self.driver.set_value(control.output);
+    }
+}
+
+impl<D> TaskTrait for FrrProcessor<D>
+where
+    D: DriverTrait,
+{
+    async fn run(&mut self) {
+        self.compute().await;
     }
 }

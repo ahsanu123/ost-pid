@@ -1,14 +1,10 @@
-use crate::drivers::driver_trait::DriverTrait;
+use crate::{constant::OUT_LIMIT, drivers::driver_trait::DriverTrait};
 use embassy_time::{Duration, Instant};
 use embedded_hal::digital::OutputPin;
-use num_traits::{clamp, float::FloatCore};
+use num_traits::{clamp, float::FloatCore as _};
 
-const OUT_LIMIT: f32 = 1000.0;
-const P_LIMIT: f32 = 1000.0;
-const I_LIMIT: f32 = 100.0;
-const D_LIMIT: f32 = 100.0;
-
-pub enum BinaryOutputState {
+#[derive(PartialEq, Eq)]
+pub enum OutputState {
     ON,
     OFF,
 }
@@ -20,7 +16,7 @@ where
     pin: OT,
     last_change_state_time: Instant,
     last_output_value: f32,
-    state: BinaryOutputState,
+    state: OutputState,
 }
 
 impl<OT> SsrDriver<OT>
@@ -32,7 +28,7 @@ where
             pin,
             last_output_value: 0.0,
             last_change_state_time: Instant::now(),
-            state: BinaryOutputState::OFF,
+            state: OutputState::OFF,
         }
     }
 }
@@ -42,23 +38,36 @@ where
     OT: OutputPin,
 {
     fn set_value(&mut self, value: f32) {
-        let value = clamp(value, 0.0, OUT_LIMIT);
-        // let now = Instant::now();
-        // let on_val = Duration::from_millis(value as u64);
-        // let off_val = Duration::from_millis((OUT_LIMIT - value) as u64);
+        let on_clamped_value = clamp(value, 0.0, OUT_LIMIT).round() as u64;
+        let off_clamped_value = clamp(OUT_LIMIT - value, 0.0, OUT_LIMIT).round() as u64;
 
-        // if (now - self.last_change_state_time) <= (self.state == BinaryOutputState::wwww
-        //     match self.state {
-        //         BinaryOutputState::ON => {
-        //             self.state = BinaryOutputState::OFF;
-        //         }
-        //         BinaryOutputState::OFF => {
-        //             self.state = BinaryOutputState::OFF;
-        //         }
-        //     }
-        // }
-        //
-        // self.last_output_value = value;
-        // self.last_change_state_time = now;
+        let now = Instant::now();
+        let on_val = Duration::from_millis(on_clamped_value);
+        let off_val = Duration::from_millis(off_clamped_value);
+
+        let delay = if self.state == OutputState::ON {
+            on_val
+        } else {
+            off_val
+        };
+
+        if (now - self.last_change_state_time) > delay {
+            match self.state {
+                OutputState::ON => {
+                    let _ = self.pin.set_low();
+                    self.state = OutputState::OFF;
+
+                    self.last_output_value = value;
+                    self.last_change_state_time = now;
+                }
+                OutputState::OFF => {
+                    let _ = self.pin.set_high();
+                    self.state = OutputState::ON;
+
+                    self.last_output_value = value;
+                    self.last_change_state_time = now;
+                }
+            }
+        }
     }
 }
