@@ -1,3 +1,3 @@
 pub trait DriverTrait {
-    fn set_value(&self, value: f32);
+    fn set_value(&mut self, value: f32);
 }
