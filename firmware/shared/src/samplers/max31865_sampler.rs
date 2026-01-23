@@ -1,5 +1,5 @@
 use crate::{
-    samplers::sampler_trait::SamplerTrait, singletons::global_state_singleton::SAMPLER_WATCHER,
+    samplers::sampler_trait::SamplerTrait, singletons::sampler_watcher_singleton::SAMPLER_WATCHER,
 };
 use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, watch::Sender};
 use embedded_hal::{delay::DelayNs, spi::SpiBus};

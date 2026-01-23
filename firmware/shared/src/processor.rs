@@ -1,9 +1,13 @@
 use crate::{
+    builders::pid_builder::PidBuilder,
     constant::{D_LIMIT, D_VAL, I_LIMIT, I_VAL, INITIAL_TEMP, OUT_LIMIT, P_LIMIT, P_VAL},
     drivers::driver_trait::DriverTrait,
-    singletons::global_state_singleton::{SAMPLER_WATCHER, SET_POINT_WATCHER},
+    singletons::{
+        sampler_watcher_singleton::SAMPLER_WATCHER, setpoint_watcher_singleton::SET_POINT_WATCHER,
+    },
     tasks::task_trait::TaskTrait,
 };
+use embassy_futures::select::{Either, select};
 use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, watch::Receiver};
 use pid::Pid;
 
@@ -26,11 +30,9 @@ where
     D: DriverTrait,
 {
     pub fn new(driver: D) -> Self {
-        let mut pid: Pid<f32> = Pid::new(INITIAL_TEMP, OUT_LIMIT);
-        pid.p(P_VAL, P_LIMIT).i(I_VAL, I_LIMIT).d(D_VAL, D_LIMIT);
-
         let sampler_receiver = SAMPLER_WATCHER.receiver().unwrap();
         let set_point_receiver = SET_POINT_WATCHER.receiver().unwrap();
+        let pid = PidBuilder::default();
 
         Self {
             pid,
@@ -46,13 +48,20 @@ where
     D: DriverTrait,
 {
     async fn compute(&mut self) {
-        let sensor_val = self.sampler_receiver.changed().await;
-        if let Some(setpoint) = self.set_point_receiver.try_get() {
-            self.pid.setpoint(setpoint);
-        }
+        let sensor_val = self.sampler_receiver.changed();
+        let setpoint = self.set_point_receiver.changed();
 
-        let control = self.pid.next_control_output(sensor_val);
-        self.driver.set_value(control.output);
+        let come_first = select(sensor_val, setpoint).await;
+
+        match come_first {
+            Either::First(sensor_val) => {
+                let control = self.pid.next_control_output(sensor_val);
+                self.driver.set_value(control.output);
+            }
+            Either::Second(setpoint) => {
+                self.pid.setpoint(setpoint);
+            }
+        }
     }
 }
 

@@ -3,10 +3,12 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+pub(crate) mod builders;
 pub(crate) mod constant;
 pub(crate) mod drivers;
 pub(crate) mod error;
 pub(crate) mod inputs;
+pub(crate) mod models;
 pub(crate) mod processor;
 pub(crate) mod samplers;
 pub(crate) mod singletons;

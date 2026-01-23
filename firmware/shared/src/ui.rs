@@ -1,2 +1,3 @@
 pub mod console_ui;
-pub mod ui_trait;
+pub mod display_trait;
+pub mod lcd_display;
