@@ -1,11 +1,2 @@
-pub trait UiTrait {
-    fn display(&mut self);
-}
-
-pub struct ConsoleUi {}
-
-impl Default for ConsoleUi {
-    fn default() -> Self {
-        Self {}
-    }
-}
+pub mod console_ui;
+pub mod ui_trait;

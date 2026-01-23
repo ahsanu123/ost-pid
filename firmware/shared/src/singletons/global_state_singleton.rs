@@ -9,6 +9,7 @@ const CH_SUB_SIZE: usize = 5;
 const CH_PUB_SIZE: usize = 4;
 
 const SAMPLER_WATCHER_RECEIVER_COUNT: usize = 4;
+const SET_POINT_WATCHER_RECEIVER_COUNT: usize = 2;
 
 pub static GLOBAL_STATE_CH: PubSubChannel<
     CriticalSectionRawMutex,
@@ -20,6 +21,12 @@ pub static GLOBAL_STATE_CH: PubSubChannel<
 
 pub static SAMPLER_WATCHER: Watch<CriticalSectionRawMutex, f32, SAMPLER_WATCHER_RECEIVER_COUNT> =
     Watch::new();
+
+pub static SET_POINT_WATCHER: Watch<
+    CriticalSectionRawMutex,
+    f32,
+    SET_POINT_WATCHER_RECEIVER_COUNT,
+> = Watch::new();
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum StateType {

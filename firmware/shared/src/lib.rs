@@ -6,7 +6,7 @@ extern crate std;
 pub(crate) mod constant;
 pub(crate) mod drivers;
 pub(crate) mod error;
-pub(crate) mod input;
+pub(crate) mod inputs;
 pub(crate) mod processor;
 pub(crate) mod samplers;
 pub(crate) mod singletons;
@@ -17,7 +17,7 @@ pub use samplers::max31865_sampler::Max31865Sampler;
 pub use samplers::mock_sampler::MockSampler;
 pub use samplers::sampler_trait::SamplerTrait;
 
-pub use pid;
+pub use processor::FrrProcessor;
 
 #[cfg(feature = "std")]
 #[cfg(test)]
