@@ -95,12 +95,12 @@ where
         match come_first {
             Either::First(keyevent) => {
                 self.handle_key_event(keyevent);
-                self.ui.update(self.state).await
+                self.ui.update(self.state);
             }
 
             Either::Second(sampling_val) => {
                 self.state.temperature = sampling_val;
-                self.ui.update(self.state).await;
+                self.ui.update(self.state);
             }
         }
     }

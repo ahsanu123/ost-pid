@@ -9,7 +9,7 @@ impl ConsoleUi {
 }
 
 impl DisplayTrait for ConsoleUi {
-    async fn update(&mut self, state: UiState) {
+    fn update(&mut self, state: UiState) {
         defmt::info!("{}", state)
     }
 }
