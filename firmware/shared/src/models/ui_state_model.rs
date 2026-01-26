@@ -20,7 +20,7 @@ impl Default for UiState {
             setpoint: 30.0,
             temperature: 25.0,
             screen: Screen::Dashboard,
-            output_val: 0.0,
+            output_val: 450.0,
         }
     }
 }
