@@ -1,12 +1,12 @@
 use crate::{SamplerTrait, drivers::driver_trait::DriverTrait, tasks::task_trait::TaskTrait};
 
-pub struct App<UI, DRIVER, SENSOR>
+pub struct App<UI, DRIVER, SAMPLER>
 where
     DRIVER: DriverTrait + TaskTrait,
-    SENSOR: SamplerTrait + TaskTrait,
+    SAMPLER: SamplerTrait + TaskTrait,
     UI: TaskTrait,
 {
     pub ui_task: UI,
     pub driver_task: DRIVER,
-    pub sensor_task: SENSOR,
+    pub sampler_task: SAMPLER,
 }

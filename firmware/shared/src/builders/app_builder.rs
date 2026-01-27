@@ -3,28 +3,28 @@ use crate::{
     tasks::task_trait::TaskTrait,
 };
 
-pub struct AppBuilderProps<UI, DRIVER, SENSOR>
+pub struct AppBuilderProps<UI, DRIVER, SAMPLER>
 where
     UI: TaskTrait,
     DRIVER: DriverTrait + TaskTrait,
-    SENSOR: SamplerTrait + TaskTrait,
+    SAMPLER: SamplerTrait + TaskTrait,
 {
     pub ui: UI,
     pub driver: DRIVER,
-    pub sensor: SENSOR,
+    pub sampler: SAMPLER,
 }
 
-pub fn build_app<UI, DRIVER, SENSOR>(
-    props: AppBuilderProps<UI, DRIVER, SENSOR>,
-) -> App<UI, DRIVER, SENSOR>
+pub fn build_app<UI, DRIVER, SAMPLER>(
+    props: AppBuilderProps<UI, DRIVER, SAMPLER>,
+) -> App<UI, DRIVER, SAMPLER>
 where
     UI: TaskTrait,
     DRIVER: DriverTrait + TaskTrait,
-    SENSOR: SamplerTrait + TaskTrait,
+    SAMPLER: SamplerTrait + TaskTrait,
 {
     App {
         ui_task: props.ui,
         driver_task: props.driver,
-        sensor_task: props.sensor,
+        sampler_task: props.sampler,
     }
 }

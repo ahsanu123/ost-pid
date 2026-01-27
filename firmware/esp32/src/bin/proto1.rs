@@ -126,9 +126,13 @@ async fn main(_spawner: Spawner) {
     let ui = UiStateTask::new(inputs, color_display);
     let driver = SsrDriver::new(ssr_pin);
 
-    let sensor = Max31865Sampler::new(max31865_dev);
+    let sampler = Max31865Sampler::new(max31865_dev);
 
-    let props = AppBuilderProps { ui, driver, sensor };
+    let props = AppBuilderProps {
+        ui,
+        driver,
+        sampler,
+    };
 
     let app = build_app(props);
 }
