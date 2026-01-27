@@ -26,13 +26,78 @@ use esp_hal::{Blocking, dma_buffers};
 use frr_shared::prelude::*;
 use mipidsi::interface::SpiInterface;
 use mipidsi::models::ST7789;
+use mipidsi::{Display, NoResetPin};
 use static_cell::StaticCell;
 use {esp_backtrace as _, esp_println as _};
 
 esp_bootloader_esp_idf::esp_app_desc!();
 
+type AppType = App<
+    UiStateTask<
+        PushButtonInput<Input<'static>>,
+        ColoredLcdDisplay<
+            Display<
+                SpiInterface<
+                    'static,
+                    SpiDevice<
+                        'static,
+                        CriticalSectionRawMutex,
+                        SpiDmaBus<'static, Blocking>,
+                        Output<'static>,
+                    >,
+                    Output<'static>,
+                >,
+                ST7789,
+                NoResetPin,
+            >,
+        >,
+    >,
+    SsrDriver<Output<'static>>,
+    Max31865Sampler<
+        SpiDevice<'static, CriticalSectionRawMutex, SpiDmaBus<'static, Blocking>, Output<'static>>,
+        Delay,
+    >,
+>;
+
+type ConcreteDriverType = SsrDriver<Output<'static>>;
+
+type ConcreteSamplerType = Max31865Sampler<
+    SpiDevice<'static, CriticalSectionRawMutex, SpiDmaBus<'static, Blocking>, Output<'static>>,
+    Delay,
+>;
+
+type ConcreteUiTask = UiStateTask<
+    PushButtonInput<Input<'static>>,
+    ColoredLcdDisplay<
+        Display<
+            SpiInterface<
+                'static,
+                SpiDevice<
+                    'static,
+                    CriticalSectionRawMutex,
+                    SpiDmaBus<'static, Blocking>,
+                    Output<'static>,
+                >,
+                Output<'static>,
+            >,
+            ST7789,
+            NoResetPin,
+        >,
+    >,
+>;
+
+static APP: StaticCell<AppType> = StaticCell::new();
+
+static DRIVER: StaticCell<ConcreteDriverType> = StaticCell::new();
+
+static SAMPLER: StaticCell<ConcreteSamplerType> = StaticCell::new();
+
+static UI: StaticCell<ConcreteUiTask> = StaticCell::new();
+
 static SPI_BUS: StaticCell<Mutex<CriticalSectionRawMutex, RefCell<SpiDmaBus<'static, Blocking>>>> =
     StaticCell::new();
+
+static DI_BUFFER: StaticCell<[u8; 512]> = StaticCell::new();
 
 /// NOTE: Implementation note
 /// to use frr_shared with embassy_embedded_hal, or embedded_hal is quite verbose,
@@ -55,7 +120,7 @@ static SPI_BUS: StaticCell<Mutex<CriticalSectionRawMutex, RefCell<SpiDmaBus<'sta
     reason = "it's not unusual to allocate larger buffers etc. in main"
 )]
 #[esp_rtos::main]
-async fn main(_spawner: Spawner) {
+async fn main(spawner: Spawner) {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
@@ -98,13 +163,13 @@ async fn main(_spawner: Spawner) {
     .with_dma(dma_channel)
     .with_buffers(dma_rx_buf, dma_tx_buf);
 
-    let mut di_spi_buffer = [0_u8; 512];
+    let di_buffer = DI_BUFFER.init([0u8; 512]);
 
     let static_bus = SPI_BUS.init(Mutex::new(RefCell::new(spi_bus)));
 
     let spi_dev = SpiDevice::new(static_bus, cs);
 
-    let di = SpiInterface::new(spi_dev, dc, &mut di_spi_buffer);
+    let di = SpiInterface::new(spi_dev, dc, di_buffer);
 
     let mut delay = Delay::new();
 
@@ -135,4 +200,33 @@ async fn main(_spawner: Spawner) {
     };
 
     let app = build_app(props);
+    let driver = app.driver_task;
+    let sampler = app.sampler_task;
+    let uitask = app.ui_task;
+
+    let driver = DRIVER.init(driver);
+    let sampler = SAMPLER.init(sampler);
+    let ui = UI.init(uitask);
+
+    spawner.spawn(ui_task(ui)).unwrap();
+    spawner.spawn(sampler_task(sampler)).unwrap();
+}
+
+#[embassy_executor::task]
+async fn driver_task(drv: &'static mut ConcreteDriverType) {
+    // TODO: not driver here, but processors
+}
+
+#[embassy_executor::task]
+async fn ui_task(ui: &'static mut ConcreteUiTask) {
+    loop {
+        ui.run().await;
+    }
+}
+
+#[embassy_executor::task]
+async fn sampler_task(sampler: &'static mut ConcreteSamplerType) {
+    loop {
+        sampler.run().await;
+    }
 }

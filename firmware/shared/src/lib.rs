@@ -18,6 +18,7 @@ pub(crate) mod singletons;
 pub(crate) mod tasks;
 pub(crate) mod ui;
 
+pub use tasks::task_trait::TaskTrait;
 pub use tasks::ui_state_task::UiStateTask;
 
 pub use samplers::max31865_sampler::Max31865Sampler;
