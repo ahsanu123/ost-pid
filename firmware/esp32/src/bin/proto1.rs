@@ -10,8 +10,8 @@
 extern crate alloc;
 
 use core::cell::RefCell;
-use defmt::info;
 use embassy_embedded_hal::shared_bus::blocking::spi::SpiDevice;
+use embassy_executor::Spawner;
 use embassy_sync::blocking_mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use esp_hal::clock::CpuClock;
@@ -20,8 +20,9 @@ use esp_hal::dma::{DmaRxBuf, DmaTxBuf};
 use esp_hal::gpio::{Input, InputConfig, Level, Output, OutputConfig};
 use esp_hal::spi::Mode;
 use esp_hal::spi::master::{Config, Spi, SpiDmaBus};
-use esp_hal::time::{Duration, Instant, Rate};
-use esp_hal::{Blocking, dma_buffers, main};
+use esp_hal::time::Rate;
+use esp_hal::timer::timg::TimerGroup;
+use esp_hal::{Blocking, dma_buffers};
 use frr_shared::prelude::*;
 use mipidsi::interface::SpiInterface;
 use mipidsi::models::ST7789;
@@ -53,12 +54,15 @@ static SPI_BUS: StaticCell<Mutex<CriticalSectionRawMutex, RefCell<SpiDmaBus<'sta
     clippy::large_stack_frames,
     reason = "it's not unusual to allocate larger buffers etc. in main"
 )]
-#[main]
-fn main() -> ! {
+#[esp_rtos::main]
+async fn main(_spawner: Spawner) {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
     esp_alloc::heap_allocator!(#[esp_hal::ram(reclaimed)] size: 98768);
+
+    let timg0 = TimerGroup::new(peripherals.TIMG0);
+    esp_rtos::start(timg0.timer0);
 
     let key_up = Input::new(peripherals.GPIO1, InputConfig::default());
     let key_right = Input::new(peripherals.GPIO2, InputConfig::default());
@@ -111,18 +115,20 @@ fn main() -> ! {
 
     let color_display = ColoredLcdDisplay::new(st7789);
 
+    let ssr_pin = Output::new(peripherals.GPIO21, Level::Low, OutputConfig::default());
+
+    let cs_max31865 = Output::new(peripherals.GPIO22, Level::Low, OutputConfig::default());
+
+    let max31865_spi = SpiDevice::new(static_bus, cs_max31865);
+
+    let max31865_dev = Max31865::new(max31865_spi, delay, 1u8, 100.0, 400.0);
+
     let ui = UiStateTask::new(inputs, color_display);
+    let driver = SsrDriver::new(ssr_pin);
 
-    // let props = AppBuilderProps {
-    //     ui: todo!(),
-    //     driver: todo!(),
-    //     sensor: todo!(),
-    //     input: todo!(),
-    // };
+    let sensor = Max31865Sampler::new(max31865_dev);
 
-    loop {
-        info!("Hello world!");
-        let delay_start = Instant::now();
-        while delay_start.elapsed() < Duration::from_millis(500) {}
-    }
+    let props = AppBuilderProps { ui, driver, sensor };
+
+    let app = build_app(props);
 }

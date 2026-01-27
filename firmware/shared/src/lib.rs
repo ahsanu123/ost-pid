@@ -41,6 +41,11 @@ pub use builders::app_builder::build_app;
 pub use builders::app_trait::App;
 pub use builders::pid_builder::PidBuilder;
 
+pub use drivers::driver_trait::DriverTrait;
+pub use drivers::ssr_driver::OutputState;
+pub use drivers::ssr_driver::SsrDriver;
+pub use max31865::Max31865;
+
 pub mod prelude {
     pub use super::*;
 }
