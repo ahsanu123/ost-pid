@@ -26,6 +26,7 @@ pub use samplers::mock_sampler::MockSampler;
 pub use samplers::sampler_trait::SamplerTrait;
 
 pub use processor::FrrProcessor;
+pub use processor::ProcessorTrait;
 
 pub use inputs::input_trait::InputTrait;
 pub use inputs::push_button_input::PushButtonInput;

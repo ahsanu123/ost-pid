@@ -88,7 +88,7 @@ type ConcreteUiTask = UiStateTask<
 
 static APP: StaticCell<AppType> = StaticCell::new();
 
-static DRIVER: StaticCell<ConcreteDriverType> = StaticCell::new();
+static PROCESSOR: StaticCell<FrrProcessor<ConcreteDriverType>> = StaticCell::new();
 
 static SAMPLER: StaticCell<ConcreteSamplerType> = StaticCell::new();
 
@@ -200,21 +200,24 @@ async fn main(spawner: Spawner) {
     };
 
     let app = build_app(props);
-    let driver = app.driver_task;
+    let processor = app.processor_task;
     let sampler = app.sampler_task;
     let uitask = app.ui_task;
 
-    let driver = DRIVER.init(driver);
+    let processor = PROCESSOR.init(processor);
     let sampler = SAMPLER.init(sampler);
     let ui = UI.init(uitask);
 
     spawner.spawn(ui_task(ui)).unwrap();
     spawner.spawn(sampler_task(sampler)).unwrap();
+    spawner.spawn(processor_task(processor)).unwrap();
 }
 
 #[embassy_executor::task]
-async fn driver_task(drv: &'static mut ConcreteDriverType) {
-    // TODO: not driver here, but processors
+async fn processor_task(processor: &'static mut FrrProcessor<ConcreteDriverType>) {
+    loop {
+        processor.run().await;
+    }
 }
 
 #[embassy_executor::task]
