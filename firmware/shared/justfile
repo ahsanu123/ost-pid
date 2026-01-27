@@ -13,3 +13,6 @@ ts:
 # build and run 
 br: 
   cargo build --bin test_pid --features std && cargo run --bin test_pid
+
+check:
+  cargo check --features std
