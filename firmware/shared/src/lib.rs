@@ -8,6 +8,7 @@ use embedded_graphics::pixelcolor::Rgb888;
 
 pub(crate) mod builders;
 pub(crate) mod constant;
+pub(crate) mod displays;
 pub(crate) mod drivers;
 pub(crate) mod error;
 pub(crate) mod inputs;
@@ -16,7 +17,6 @@ pub(crate) mod processor;
 pub(crate) mod samplers;
 pub(crate) mod singletons;
 pub(crate) mod tasks;
-pub(crate) mod ui;
 
 pub use tasks::task_trait::TaskTrait;
 pub use tasks::ui_state_task::UiStateTask;
@@ -31,11 +31,11 @@ pub use processor::ProcessorTrait;
 pub use inputs::input_trait::InputTrait;
 pub use inputs::push_button_input::PushButtonInput;
 
-pub use ui::color_lcd_display::ColoredLcdDisplay;
-pub use ui::display_trait::DisplayTrait;
-pub use ui::monochrome_lcd_dispay::MonochromeLcdDisplay;
+pub use displays::color_lcd_display::ColoredLcdDisplay;
+pub use displays::display_trait::DisplayTrait;
+pub use displays::monochrome_lcd_dispay::MonochromeLcdDisplay;
 
-pub use models::ui_state_model::Screen;
+pub use models::screen_model::Screen;
 pub use models::ui_state_model::UiState;
 
 pub use builders::app_builder::AppBuilderProps;
@@ -56,7 +56,7 @@ pub mod prelude {
 // where
 //     T: embedded_graphics::prelude::DrawTarget<Color = Rgb888>,
 // {
-//     // TODO:
+//     todo!()
 // }
 
 #[cfg(feature = "std")]

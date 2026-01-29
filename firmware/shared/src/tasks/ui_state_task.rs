@@ -1,12 +1,12 @@
 use crate::{
+    displays::display_trait::DisplayTrait,
     inputs::input_trait::{InputTrait, KeyEvent},
-    models::ui_state_model::{Screen, UiState},
+    models::{screen_model::Screen, ui_state_model::UiState},
     singletons::{
         input_watcher_singleton::INPUT_WATCHER, sampler_watcher_singleton::SAMPLER_WATCHER,
         setpoint_watcher_singleton::SET_POINT_WATCHER,
     },
     tasks::task_trait::TaskTrait,
-    ui::display_trait::DisplayTrait,
 };
 use embassy_futures::select::{Either, select};
 use embassy_sync::{
@@ -95,20 +95,22 @@ where
     UI: DisplayTrait,
 {
     async fn run(&mut self) {
-        let keyevent = self.input.pool();
-        let sampling_val = self.sampler_receiver.changed();
+        loop {
+            let keyevent = self.input.pool();
+            let sampling_val = self.sampler_receiver.changed();
 
-        let come_first = select(keyevent, sampling_val).await;
+            let come_first = select(keyevent, sampling_val).await;
 
-        match come_first {
-            Either::First(keyevent) => {
-                self.handle_key_event(keyevent);
-                self.ui.update(self.state);
-            }
+            match come_first {
+                Either::First(keyevent) => {
+                    self.handle_key_event(keyevent);
+                    self.ui.update(self.state);
+                }
 
-            Either::Second(sampling_val) => {
-                self.state.temperature = sampling_val;
-                self.ui.update(self.state);
+                Either::Second(sampling_val) => {
+                    self.state.temperature = sampling_val;
+                    self.ui.update(self.state);
+                }
             }
         }
     }

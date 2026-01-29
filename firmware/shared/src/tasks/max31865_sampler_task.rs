@@ -11,9 +11,11 @@ where
     D: DelayNs,
 {
     async fn run(&mut self) {
-        let value = self.sample();
-        self.sampler_sender.send(value);
+        loop {
+            let value = self.sample();
+            self.sampler_sender.send(value);
 
-        Timer::after_millis(50).await;
+            Timer::after_millis(50).await;
+        }
     }
 }

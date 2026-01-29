@@ -1,5 +1,6 @@
 use crate::{
-    samplers::sampler_trait::SamplerTrait, singletons::sampler_watcher_singleton::SAMPLER_WATCHER,
+    samplers::sampler_trait::SamplerTrait,
+    singletons::sampler_watcher_singleton::{SAMPLER_WATCHER, SAMPLER_WATCHER_RECEIVER_COUNT},
 };
 use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, watch::Sender};
 use embedded_hal::{delay::DelayNs, spi::SpiDevice};
@@ -11,7 +12,8 @@ where
     D: DelayNs,
 {
     sensor: Max31865<S, D>,
-    pub sampler_sender: Sender<'static, CriticalSectionRawMutex, f32, 4>,
+    pub sampler_sender:
+        Sender<'static, CriticalSectionRawMutex, f32, SAMPLER_WATCHER_RECEIVER_COUNT>,
 }
 
 impl<S, D> Max31865Sampler<S, D>

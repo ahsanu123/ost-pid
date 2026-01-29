@@ -66,7 +66,7 @@ type ConcreteSamplerType = Max31865Sampler<
     Delay,
 >;
 
-type ConcreteUiTask = UiStateTask<
+type ConcreteDisplayType = UiStateTask<
     PushButtonInput<Input<'static>>,
     ColoredLcdDisplay<
         Display<
@@ -92,7 +92,7 @@ static PROCESSOR: StaticCell<FrrProcessor<ConcreteDriverType>> = StaticCell::new
 
 static SAMPLER: StaticCell<ConcreteSamplerType> = StaticCell::new();
 
-static UI: StaticCell<ConcreteUiTask> = StaticCell::new();
+static UI: StaticCell<ConcreteDisplayType> = StaticCell::new();
 
 static SPI_BUS: StaticCell<Mutex<CriticalSectionRawMutex, RefCell<SpiDmaBus<'static, Blocking>>>> =
     StaticCell::new();
@@ -214,22 +214,16 @@ async fn main(spawner: Spawner) {
 }
 
 #[embassy_executor::task]
-async fn processor_task(processor: &'static mut FrrProcessor<ConcreteDriverType>) {
-    loop {
-        processor.run().await;
-    }
+async fn processor_task(processor_task: &'static mut FrrProcessor<ConcreteDriverType>) {
+    processor_task.run().await;
 }
 
 #[embassy_executor::task]
-async fn ui_task(ui: &'static mut ConcreteUiTask) {
-    loop {
-        ui.run().await;
-    }
+async fn ui_task(display_task: &'static mut ConcreteDisplayType) {
+    display_task.run().await;
 }
 
 #[embassy_executor::task]
-async fn sampler_task(sampler: &'static mut ConcreteSamplerType) {
-    loop {
-        sampler.run().await;
-    }
+async fn sampler_task(sampler_task: &'static mut ConcreteSamplerType) {
+    sampler_task.run().await;
 }

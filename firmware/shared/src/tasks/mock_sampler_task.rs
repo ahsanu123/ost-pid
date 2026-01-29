@@ -7,16 +7,18 @@ where
     IP: Wait,
 {
     async fn run(&mut self) {
-        match select(
-            self.inc_input.wait_for_falling_edge(),
-            self.dec_input.wait_for_falling_edge(),
-        )
-        .await
-        {
-            Either::First(_) => self.increase_value(),
-            Either::Second(_) => self.decrease_value(),
-        }
+        loop {
+            match select(
+                self.inc_input.wait_for_falling_edge(),
+                self.dec_input.wait_for_falling_edge(),
+            )
+            .await
+            {
+                Either::First(_) => self.increase_value(),
+                Either::Second(_) => self.decrease_value(),
+            }
 
-        self.sampler_sender.send(self.value);
+            self.sampler_sender.send(self.value);
+        }
     }
 }

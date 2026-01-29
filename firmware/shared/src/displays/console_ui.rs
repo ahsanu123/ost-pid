@@ -1,4 +1,4 @@
-use crate::{models::ui_state_model::UiState, ui::display_trait::DisplayTrait};
+use crate::{displays::display_trait::DisplayTrait, models::ui_state_model::UiState};
 
 pub struct ConsoleUi {}
 

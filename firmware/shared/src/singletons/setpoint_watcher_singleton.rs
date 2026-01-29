@@ -1,5 +1,6 @@
 use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, watch::Watch};
-const SET_POINT_WATCHER_RECEIVER_COUNT: usize = 2;
+
+pub const SET_POINT_WATCHER_RECEIVER_COUNT: usize = 2;
 
 pub static SET_POINT_WATCHER: Watch<
     CriticalSectionRawMutex,
