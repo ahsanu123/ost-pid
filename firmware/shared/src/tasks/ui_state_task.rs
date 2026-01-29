@@ -75,8 +75,16 @@ where
 
     pub fn handle_key_event(&mut self, event: KeyEvent) {
         match self.state.screen {
-            Screen::Dashboard => self.handle_dashboard_state_update(event),
-            Screen::Setting => self.handle_setting_state_update(event),
+            Screen::ShowTemperature => self.handle_dashboard_state_update(event),
+            Screen::ShowSetpoint => self.handle_setting_state_update(event),
+            Screen::ShowError => todo!(),
+            Screen::ShowProportionalVal => todo!(),
+            Screen::ShowDerivativeVal => todo!(),
+            Screen::ShowIntegralVal => todo!(),
+            Screen::SetSetpoint => todo!(),
+            Screen::SetProportionalVal => todo!(),
+            Screen::SetDerivativeVal => todo!(),
+            Screen::SetIntegralVal => todo!(),
         };
     }
 }

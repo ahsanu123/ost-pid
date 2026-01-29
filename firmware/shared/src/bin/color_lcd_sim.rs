@@ -6,7 +6,7 @@ use frr_shared::{ColoredLcdDisplay, UiState};
 use std::time::Duration;
 
 fn main() {
-    let display = SimulatorDisplay::<Rgb565>::new(Size::new(320, 170));
+    let display = SimulatorDisplay::<Rgb565>::new(Size::new(320, 172));
     let mut window = Window::new("Digital clock", &OutputSettings::default());
 
     let mut lcd = ColoredLcdDisplay::new(display);
