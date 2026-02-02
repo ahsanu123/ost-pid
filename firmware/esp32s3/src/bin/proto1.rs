@@ -18,7 +18,7 @@ use embassy_time::Timer;
 use esp_hal::clock::CpuClock;
 use esp_hal::delay::Delay;
 use esp_hal::dma::{DmaRxBuf, DmaTxBuf};
-use esp_hal::gpio::{Input, InputConfig, Level, Output, OutputConfig};
+use esp_hal::gpio::{DriveStrength, Input, InputConfig, Level, Output, OutputConfig, Pull};
 use esp_hal::spi::Mode;
 use esp_hal::spi::master::{Config, Spi, SpiDmaBus};
 use esp_hal::time::Rate;
@@ -128,25 +128,50 @@ async fn main(spawner: Spawner) {
     // NOTE: if not work, look at esp-rs example
     esp_alloc::heap_allocator!(#[esp_hal::ram(reclaimed)] size: 73744);
 
+    let scl_mosi = peripherals.GPIO11;
+    let scl_sck = peripherals.GPIO12;
+    let scl_miso = peripherals.GPIO13;
+
+    let max31865_ddry = peripherals.GPIO42;
+    let max31865_cs = peripherals.GPIO5;
+
+    let ssr1_pin = peripherals.GPIO1;
+    let ssr2_pin = peripherals.GPIO2;
+
+    let zero_crossing = peripherals.GPIO3;
+
+    let sw1_pin = peripherals.GPIO15;
+    let sw2_pin = peripherals.GPIO16;
+    let sw3_pin = peripherals.GPIO46;
+    let sw4_pin = peripherals.GPIO17;
+    let sw5_pin = peripherals.GPIO18;
+    let sw6_pin = peripherals.GPIO21;
+
+    let lcd_dc = peripherals.GPIO8;
+    let lcd_cs = peripherals.GPIO10;
+
+    let led_indicator_pin = peripherals.GPIO47;
+
     let timg0 = TimerGroup::new(peripherals.TIMG0);
     esp_rtos::start(timg0.timer0);
 
-    let mut led_indicator = Output::new(peripherals.GPIO18, Level::Low, OutputConfig::default());
+    let led_indicator_out_config = OutputConfig::default()
+        .with_pull(Pull::Up)
+        .with_drive_strength(DriveStrength::_40mA);
 
-    let key_up = Input::new(peripherals.GPIO1, InputConfig::default());
-    let key_right = Input::new(peripherals.GPIO2, InputConfig::default());
-    let key_down = Input::new(peripherals.GPIO3, InputConfig::default());
-    let key_left = Input::new(peripherals.GPIO4, InputConfig::default());
-    let key_back = Input::new(peripherals.GPIO5, InputConfig::default());
-    let key_enter = Input::new(peripherals.GPIO13, InputConfig::default());
+    let mut led_indicator = Output::new(led_indicator_pin, Level::Low, led_indicator_out_config);
+
+    let key_up = Input::new(sw1_pin, InputConfig::default());
+    let key_right = Input::new(sw2_pin, InputConfig::default());
+    let key_down = Input::new(sw3_pin, InputConfig::default());
+    let key_left = Input::new(sw4_pin, InputConfig::default());
+    let key_back = Input::new(sw5_pin, InputConfig::default());
+    let key_enter = Input::new(sw6_pin, InputConfig::default());
 
     let inputs = PushButtonInput::new(key_up, key_right, key_down, key_left, key_back, key_enter);
 
-    let sclk = peripherals.GPIO0;
-    let miso = peripherals.GPIO12;
-    let mosi = peripherals.GPIO14;
-    let cs = Output::new(peripherals.GPIO16, Level::Low, OutputConfig::default());
-    let dc = Output::new(peripherals.GPIO17, Level::Low, OutputConfig::default());
+    let lcd_cs = Output::new(lcd_cs, Level::Low, OutputConfig::default());
+    let lcd_dc = Output::new(lcd_dc, Level::Low, OutputConfig::default());
 
     // for esp32s3
     let dma_channel = peripherals.DMA_CH0;
@@ -162,9 +187,9 @@ async fn main(spawner: Spawner) {
             .with_mode(Mode::_0),
     )
     .unwrap()
-    .with_sck(sclk)
-    .with_mosi(mosi)
-    .with_miso(miso)
+    .with_sck(scl_sck)
+    .with_mosi(scl_mosi)
+    .with_miso(scl_miso)
     .with_dma(dma_channel)
     .with_buffers(dma_rx_buf, dma_tx_buf);
 
@@ -172,9 +197,9 @@ async fn main(spawner: Spawner) {
 
     let static_bus = SPI_BUS.init(Mutex::new(RefCell::new(spi_bus)));
 
-    let spi_dev = SpiDevice::new(static_bus, cs);
+    let spi_dev = SpiDevice::new(static_bus, lcd_cs);
 
-    let di = SpiInterface::new(spi_dev, dc, di_buffer);
+    let di = SpiInterface::new(spi_dev, lcd_dc, di_buffer);
 
     let mut delay = Delay::new();
 
@@ -185,9 +210,9 @@ async fn main(spawner: Spawner) {
 
     let color_display = ColoredLcdDisplay::new(st7789);
 
-    let ssr_pin = Output::new(peripherals.GPIO21, Level::Low, OutputConfig::default());
+    let ssr_pin = Output::new(ssr1_pin, Level::Low, OutputConfig::default());
 
-    let cs_max31865 = Output::new(peripherals.GPIO7, Level::Low, OutputConfig::default());
+    let cs_max31865 = Output::new(max31865_cs, Level::Low, OutputConfig::default());
 
     let max31865_spi = SpiDevice::new(static_bus, cs_max31865);
 
