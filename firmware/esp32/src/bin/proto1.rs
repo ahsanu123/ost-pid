@@ -14,6 +14,7 @@ use embassy_embedded_hal::shared_bus::blocking::spi::SpiDevice;
 use embassy_executor::Spawner;
 use embassy_sync::blocking_mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_time::Timer;
 use esp_hal::clock::CpuClock;
 use esp_hal::delay::Delay;
 use esp_hal::dma::{DmaRxBuf, DmaTxBuf};
@@ -129,6 +130,8 @@ async fn main(spawner: Spawner) {
     let timg0 = TimerGroup::new(peripherals.TIMG0);
     esp_rtos::start(timg0.timer0);
 
+    let mut led_indicator = Output::new(peripherals.GPIO23, Level::Low, OutputConfig::default());
+
     let key_up = Input::new(peripherals.GPIO1, InputConfig::default());
     let key_right = Input::new(peripherals.GPIO2, InputConfig::default());
     let key_down = Input::new(peripherals.GPIO3, InputConfig::default());
@@ -211,6 +214,11 @@ async fn main(spawner: Spawner) {
     spawner.spawn(ui_task(ui)).unwrap();
     spawner.spawn(sampler_task(sampler)).unwrap();
     spawner.spawn(processor_task(processor)).unwrap();
+
+    loop {
+        led_indicator.toggle();
+        Timer::after_millis(1000).await
+    }
 }
 
 #[embassy_executor::task]
