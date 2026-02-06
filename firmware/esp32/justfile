@@ -1,0 +1,3 @@
+# run binary
+rb name: 
+  cargo run --bin {{name}}

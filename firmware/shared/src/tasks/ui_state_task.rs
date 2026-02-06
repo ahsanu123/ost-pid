@@ -103,7 +103,9 @@ where
 
             match come_first {
                 Either::First(keyevent) => {
-                    self.handle_key_event(keyevent);
+                    // NOTE:
+                    // comment out for now, this make builded binary panic because it still todo!()
+                    // self.handle_key_event(keyevent);
                     self.ui.update(self.state);
                 }
 
