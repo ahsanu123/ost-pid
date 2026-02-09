@@ -144,7 +144,7 @@ async fn main(spawner: Spawner) {
     let timg0 = TimerGroup::new(peripherals.TIMG0);
     esp_rtos::start(timg0.timer0);
 
-    let mut led_indicator = Output::new(peripherals.GPIO4, Level::Low, OutputConfig::default());
+    let mut led_indicator = Output::new(peripherals.GPIO21, Level::Low, OutputConfig::default());
 
     let key_up = Input::new(peripherals.GPIO27, InputConfig::default());
     let key_right = Input::new(peripherals.GPIO26, InputConfig::default());
@@ -197,7 +197,7 @@ async fn main(spawner: Spawner) {
 
     let color_display = ColoredLcdDisplay::new(st7789);
 
-    let ssr_pin = Output::new(peripherals.GPIO21, Level::Low, OutputConfig::default());
+    let ssr_pin = Output::new(peripherals.GPIO4, Level::Low, OutputConfig::default());
 
     let cs_max31865 = Output::new(peripherals.GPIO14, Level::Low, OutputConfig::default());
 

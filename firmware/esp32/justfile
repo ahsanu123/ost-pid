@@ -1,3 +1,9 @@
 # run binary
 rb name: 
   cargo run --bin {{name}}
+
+rble_bas:
+  cargo run --bin ble_bas --features ble
+
+cble_bas: 
+  cargo build --bin ble_bas --features ble
