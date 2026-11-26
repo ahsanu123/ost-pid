@@ -1,3 +1,7 @@
+<!-- boardrepo-badge:v1 -->
+[![View on BoardRepo](https://boardrepo.com/badge/github.svg?v=2)](https://boardrepo.com/b/16e9ad76-148e-480f-bbf2-7e68e571221b?ref=github-readme)
+<!-- /boardrepo-badge:v1 -->
+
 <p>
   <a href="">
     <img alt="npm version" src="https://badgen.net/github/commits/ahsanu123/ost-pid/">
